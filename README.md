@@ -1,2 +1,206 @@
 # JavaVulnMap
 Java漏洞导图，用于梳理自己的java安全知识栈
+
+
+- **应用层**
+   - OWASP Top 10
+      - 2021-Broken Access Control
+      - 2021-Cryptographic Failures
+      - 2021-Injection
+      - 2021-Insecure Design
+      - 2021-Security Misconfiguration
+      - 2021-Vulnerable and Outdated Components
+      - 2021-Identification and Authentication Failures
+      - 2021-Software and Data Integrity Failures
+      - 2021-Security Logging and Monitoring Failures
+      - 2021-Server-Side Request Forgery
+      - 2017-Broken Authentication and Session Management
+      - 2017-Cross-Site Scripting (XSS)
+      - 2017-Sensitive Data Exposure
+      - 2017-Insufficient Attack Protection
+      - 2017-Cross-Site Request Forgery (CSRF)
+      - 2017-Using Components with Known Vulnerabilities
+      - 2017-Underprotected APIs
+   -  其它漏洞
+      - 反序列化漏洞
+         - 应用在解析序列化数据时，没有充分限制序列化数据中类的范围，导致攻击者可以构造恶意的序列化数据，调用高危对象，执行高危操作。
+            - 二进制类序列化协议 JDK
+            - 文本类序列化协议 Fastjson
+      - SpEL表达式注入
+         - StandardEvaluationContext
+      - 变量覆盖
+   - 基于Java开发的应用
+      - Confluence
+         - CVE-2022-26134
+            - `source`是`namespace`，`sink`位于是`com.opensymphony.xwork.util.OgnlValueStack`，`findValue`对`namespace`(恶意OGNL表达式)进行解析触发OGNL注入。
+      - Jenkins
+         - CVE-2018-1000861
+            - 利用Jenkins动态路由机制的缺陷来绕过ACL的限制，结合绕过Groovy沙箱的Groovy代码注入来实现无验证RCE的攻击利用
+- **框架层**
+   -  Web框架 
+      - Spring Framework([https://tanzu.vmware.com/security](https://tanzu.vmware.com/security))
+         - Spring Boot 
+            - Spring Cloud 
+               - Spring Cloud Function
+                  - CVE-2022-22963
+                     - StandardEvaluationContext能够执行Runtime
+               - Spring Cloud Gateway 
+                  - CVE-2022-22947
+               - Spring Data Commons
+                  - CVE-2018-1273
+                     - StandardEvaluationContext
+         - Spring MVC 
+            - CVE-2022-22965
+         - 组件
+            - spring-security-oauth2
+               - CVE-2018-1260
+            - spring-messaging
+               - CVE-2018-1270
+            - spring-amqp
+               - CVE-2016-2173
+               - CVE-2017-8045
+            - Spring Security OAuth
+               - CVE-2016-4977
+      - JSF
+      - Struts2 
+         - S2-062
+         - S2-061
+         - S2-059
+         - S2-057
+         - S2-055
+         - S2-053
+         - S2-052
+         - S2-048
+         - S2-046
+         - S2-045
+         - S2-037
+         - S2-036
+         - S2-033
+         - S2-032
+         - S2-029
+         - S2-026
+         - S2-022
+         - S2-021
+         - S2-020
+         - S2-018
+         - S2-019
+         - S2-016
+         - S2-015
+         - S2-014
+         - S2-013
+         - S2-012
+         - S2-08
+         - S2-07
+         - S2-05
+         - S2-03
+         - S2-01
+      - Struts1
+   -  核心功能 
+      - JDBC
+      - JNDI
+      - EJB
+      - RMI
+      - Servlet
+      - JSP
+      - XML
+      - JMS
+      - Java IDL
+      - JTS
+      - JTA
+      - JavaMail
+      - JAF
+   -  组件 
+      - Apache Druid 
+         - CVE-2021-25646
+      - Fastjson
+         - v1.2.24
+            - 有`parseObject`和`parse`两种方式进行反序列化，存在`autoType`特性可以通过`@type`调用指定类的`getter`或`setter`方法，如果某个`getter`或`setter`方法存在恶意操作，则可以实现命令执行。
+         - v1.2.41
+            - 在开启`AutoTypeSupport`的情况下，通过在类名前增加`L`、末尾`; `绕过黑名单，例如`Lcom.sun.rowset.JdbcRowSetImpl;`
+         - v1.2.42
+            - 在CheckAutoType里面增加了一次对className的提取操作，所以可以通过再增加一次`L`、末尾`; `绕过黑名单，例如
+         - v1.2.43
+            - 与1.2.41和1.2.42类似，通过添加`[`绕过，例如`{"@type":"[com.sun.rowset.JdbcRowSetImpl"[{,`
+         - v1.2.45
+            - 在开启`AutoTypeSupport`的情况下，`org.apache.ibatis.datasource.jndi.JndiDataSourceFactory`不在黑名单，直接绕过
+         - v1.2.47
+            - 精彩的漏洞，通过利用`java.lang.Class`不在白名单，也不在黑名单中，绕过`fastjson`安全机制将`com.sun.rowset.JdbcRowSetImpl`加入到缓存中，然后利用黑名单的`TypeUtils.getClassFromMapping(typeName) == null`逻辑绕过黑名单，实现恶意利用
+         - v1.2.62
+            - 在开启`AutoTypeSupport`的情况下,`org.apache.xbean.propertyeditor.JndiConverter`类的`toObjectImpl()`函数存在JNDI注入漏洞，可由其构造函数处触发利用
+         - v.1.2.66
+            - 在开启`AutoTypeSupport`的情况，`org.apache.shiro.jndi.JndiObjectFactory`(shiro-core)、`br.com.anteros.dbcp.AnterosDBCPConfig`(Anteros-Core和Anteros-DBCP)、`com.ibatis.sqlmap.engine.transaction.jta.JtaTransactionConfig`(ibatis-sqlmap和jta)，存在JNDI注入漏洞，可由其构造函数处触发利用
+         - v1.2.67
+            - 在开启`AutoTypeSupport`的情况，`org.apache.ignite.cache.jta.jndi.CacheJndiTmLookup`(ignite-core、ignite-jta和jta)、`org.apache.shiro.jndi.JndiObjectFactory`(shiro-core和slf4j-api)，存在JNDI注入漏洞，可由其构造函数处触发利用
+         - v1.2.68
+            - 通过`java.lang.Runnable`，`java.lang.Readable`和`java.lang.AutoCloseable`几个类，通过`Mysql connector RCE`、`Apache commons io read and write files`、`Jetty SSRF`、`Apache xbean-reflect RCE` 几条攻击链，可实现`mysql RCE`等恶意攻击。在该版本之后增加`safeMode`。
+         - v1.2.80
+            - 待补充
+      - Log4j2
+         - CVE-2021-44228 （Log4Shell）
+            - Log4j2会解析${}，读取出其中的内容。判断其是否为Ldap实现的JNDI，于是调用Java底层的Lookup方法，尝试完成Ldap的Lookup操作。例如`${jndi:ldap://127.0.0.1/poc}`
+      - ScriptEngine 
+         - eval()
+      - Shiro
+         - CVE-2016-4437（Shiro 550）
+            - Apache Shiro <= 1.2.4 版本中，加密的用户信息序列化后存储在Cookie的rememberMe字段中，攻击者可以使用Shiro的AES加密算法的默认密钥来构造恶意的Cookie rememberMe值，发送到Shiro服务端之后会先后进行Base64解码、AES解密、readObject()反序列化，从而触发Java原生反序列化漏洞，进而实现RCE
+         - Shiro721
+            - 由于Apache Shiro 1.4.1及其之前版本的Cookie中的rememberMe字段是使用AES-128-CBC模式来加密生成的，因此攻击者可以在已有的正常登陆的Cookie rememberMe值的基础上根据Padding Oracle Attack的原理来暴破构造出恶意的rememberMe字段，重新发送暴破出来的恶意rememberMe值到服务端进而触发反序列化漏洞达到RCE
+            - Padding Oracle Attack
+               - 主要是由于设计使用的场景不当，导致可以利用密码算法通过”旁路攻击“被破解，并不是对算法的破解。利用该漏洞可以破解出密文的明文以及将明文加密成密文
+- **应用服务器**
+   - Tomcat
+   - Jetty
+   - GlassFish
+   - JBoss EAP
+   - WebLogic
+      - CVE-2015-4852
+      - CVE-2016-0638
+      - CVE-2016-3510
+      - CVE-2017-3248
+      - CVE-2017-3506
+      - CVE-2017-10271
+      - CVE-2018-2628
+      - CVE-2018-2894
+      - CVE-2018-3191
+      - CVE-2019-2647
+      - CVE-2019-2648
+      - CVE-2019-2649
+      -  CVE-2019-2650
+      - CVE-2019-2725
+      - CVE-2019-2729
+      - CVE-2019-2888
+      - CVE-2019-2890
+      - CVE-2020-2551
+      - CVE-2020-2555
+      - CVE-2020-14644
+      - CVE-2020-14645
+      - CVE-2020-14882
+      - CVE-2020-14883
+      - CVE-2021-2394 
+      - CVE-2022-21350
+   - WebSphere
+   - WildFly
+- **JVM层**
+   - Java版本 
+      - Java8
+      - Java11
+      - Java17
+   - JVM优化器 
+      - VisualVM
+      - JProfiler
+      - Java Mission Control
+- **补充知识**
+   - 反射
+      - Java的反射是指程序在运行期可以拿到一个对象的所有信息。
+   - RMI
+      - RMI(Remote Method Invocation)是指Java虚拟机上的对象调用另外一个Java虚拟机上的对象的方法。
+   - JNDI
+      - JNDI(Java Naming and Directory Interface)是SUN公司提供的一种标准的Java命名系统接口，JNDI提供统一的客户端API，通过不同的访问提供者接口JNDI服务供应接口(SPI)的实现，由管理者将JNDI API映射为特定的命名服务和目录系统，使得Java应用程序可以和这些命名服务和目录服务之间进行交互。
+   - 反序列化
+      - 序列化即将对象转化为字节流，便于保存在文件，内存，数据库中，反序列化即将字节流转化为对象；也就是把数据转化为一种可逆的数据结构，再把这种可逆的数据结构转化回数据，这就是序列化与反序列化
+         - 必须实现Serializable接口
+         - 序列化 Java.io.ObjectOutputStream->writeObject()
+         - 反序列化 Java.io.ObjectInputStream->readObject() 
+   - JDWP
+   - SpEL
+      - SpEL（Spring Expression Language）是Spring提供的一种表达式语言，能在运行时构建复杂表达式、存取对象图属性、对象方法调用等，并且能与Spring功能完美整合，如能用来配置Bean定义，表达式语言给静态Java语言增加了动态功能
